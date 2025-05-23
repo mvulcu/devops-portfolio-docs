@@ -1,0 +1,25 @@
+# MkDocs build output
+/site/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.env/
+.venv/
+env/
+venv/
+
+# VSCode and IDEs
+.vscode/
+.idea/
+
+# OS and metadata files
+.DS_Store
+Thumbs.db
+
+# Node.js (optional)
+node_modules/

@@ -1,0 +1,52 @@
+/* docs/stylesheets/extra.css - Упрощенная версия */
+
+/* Центрирование текста */
+.text-center {
+  text-align: center;
+}
+
+/* Улучшенные карточки */
+.md-typeset .grid.cards > li {
+  border-radius: 8px;
+  transition: transform 0.2s ease;
+  border: 1px solid var(--md-default-fg-color--lightest);
+}
+
+.md-typeset .grid.cards > li:hover {
+  transform: translateY(-2px);
+}
+
+/* Улучшенные кнопки */
+.md-button {
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+/* Статус бейджи в таблицах */
+.md-typeset table img[alt*="badge"] {
+  vertical-align: middle;
+  margin: 0;
+}
+
+/* Mermaid диаграммы - центрирование */
+.mermaid {
+  text-align: center;
+}
+
+/* Grid layout для метрик */
+.md-typeset .grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+/* Небольшие улучшения для кода */
+.md-typeset pre {
+  border-radius: 8px;
+}
+
+/* Улучшенные admonitions */
+.md-typeset .admonition {
+  border-radius: 8px;
+}
