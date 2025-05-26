@@ -29,7 +29,10 @@ This repository contains the technical documentation for the **DevOps Portfolio*
     Output will be in the `site/` directory (not included in version control).
 
 ## 🗂️ Structure
+<<<<<<< HEAD
 
+=======
+>>>>>>> f5de6f690e89672c48139f4a8a8a1a08fdd75443
 ```
 docs/
 ├── index.md
@@ -45,6 +48,7 @@ README.md
 
 ```
 
+
 ## 🌐 Deployment
 
 - Documentation is deployed as a static site via [Azure Static Web Apps](https://azure.microsoft.com/en-us/products/app-service/static/).
@@ -53,6 +57,4 @@ README.md
 ---
 
 *Made with ❤️ by Maria Vulcu*
-
-
 
