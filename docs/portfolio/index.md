@@ -193,25 +193,59 @@ graph LR
 ## :material-pipe: CI/CD Pipeline
 
 ```mermaid
-flowchart TD
+graph TD
+    %% Начало процесса
     A[Code Push] --> B{Branch?}
-    B -->|main| C[Production Pipeline]
-    B -->|dev| D[Development Pipeline]
-    B -->|PR| E[CI Tests]
-    
-    C --> F[Build Docker Image]
-    D --> F
-    F --> G[Push to GHCR]
-    G --> H[Deploy to Azure]
-    
-    E --> I[Lint]
-    E --> J[Test]
-    E --> K[Build]
-    
-    style A fill:#717f96,stroke:#ffffff,stroke-width:2px,color:#ffffff
-    style C fill:#059669,stroke:#ffffff,stroke-width:2px,color:#ffffff
-    style D fill:#3b82f6,stroke:#ffffff,stroke-width:2px,color:#ffffff
-    style H fill:#8b5cf6,stroke:#ffffff,stroke-width:2px,color:#ffffff
+
+    %% Основные ветки
+    B -->|dev| D[Run Tests]
+    B -->|PR| E[Pull Request]
+
+    %% PR-пайплайн
+    E --> E1[Lint]
+    E1 --> E2[Unit Tests]
+    E2 --> E3[Integration Tests]
+    E3 --> E4[Build]
+    E4 --> E5{Tests Passed?}
+    E5 -->|Yes| E6[Merge to Main]
+    E5 -->|No| EX[Fix Issues]
+
+    %% Ветка dev
+    D --> D1[Image Scan]
+    D1 --> D2[Deploy to Dev Environment]
+    D2 --> D3[Monitor & Health Check]
+    D3 --> D4{Health Check Passed?}
+    D4 -->|No| D5[Rollback to previous stable build]
+    D4 -->|Yes| D6[Ready for PR]
+    D6 --> E[Pull Request]
+
+    %% Production Pipeline (только после merge в main)
+    E6 --> C[Production Pipeline]
+    C --> C1[Build Image]
+    C1 --> C2[Image Scan]
+    C2 --> C3[Tag & Push to GHCR]
+    C3 --> C4[Deploy to Production Environment]
+    C4 --> C5[Monitor & Health Check]
+    C5 --> C6{Health Check Passed?}
+    C6 -->|No| C7[Rollback to previous stable build]
+    C6 -->|Yes| C8[Production Stable]
+
+    %% Стили узлов
+    classDef start fill:#9da8b0,color:#fff,stroke:#000,stroke-width:2px
+    classDef action fill:#4d7bff,color:#fff
+    classDef decision fill:#ffa348,color:#000
+    classDef final fill:#44c767,color:#fff
+    classDef fail fill:#e0493f,color:#fff
+    classDef monitor fill:#6c60d0,color:#fff
+
+    class A,B start
+    class C,D,E,E1,E2,E3,E4,D1,D2,C1,C2,C3,C4 action
+    class B,E5,D4,C6 decision
+    class E6,D6,C8 final
+    class EX,D5,C7 fail
+    class D3,C5 monitor
+
+
 ```
 
 <div class="text-center" markdown>
