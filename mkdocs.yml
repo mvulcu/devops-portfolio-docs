@@ -38,7 +38,7 @@ theme:
     # Светлая тема
     - scheme: default
       primary: blue grey
-      accent: purple
+      accent: deep purple
       toggle:
         icon: material/weather-sunny
         name: Переключить на темную тему
@@ -135,4 +135,4 @@ nav:
   
 # Авторские права
 copyright: |
-  &copy; 2024 Maria Vulcu | Built with Material for MkDocs
+  &copy; 2024 Maria Vulcu 

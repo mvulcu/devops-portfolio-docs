@@ -5,10 +5,10 @@ keywords: DevOps, Azure, IaC, Next.js, Bicep
 icon: material/book-open-page-variant
 ---
 
-# :material-book-open-page-variant:  DevOps Engineering Hub | Maria Vulcu
+# 👋 I'm Maria Vulcu, DevOps Engineer & Cloud Architect.
 
 <div class="hero-section" markdown>
-👋 I'm Maria Vulcu, DevOps Engineer & Cloud Architect.
+
 Welcome to my professional documentation hub featuring technical guides, detailed project architectures, and live cloud-native deployments.
 </div>
 
@@ -33,14 +33,6 @@ Welcome to my professional documentation hub featuring technical guides, detaile
 
 ### :material-monitor-dashboard: DevOps Portfolio
 > **Cloud-native portfolio with real-time monitoring**
-
-**About This Documentation**
-
-This documentation site demonstrates DevOps best practices:<br>
-- Built and deployed automatically via GitHub Actions (CI/CD).<br>
-- Infrastructure managed via Infrastructure-as-Code (Bicep).<br>
-- Real-time monitoring via Azure Application Insights.
-
 
 <div class="project-grid" markdown>
 
