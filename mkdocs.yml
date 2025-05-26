@@ -61,7 +61,7 @@ theme:
 plugins:
   - search  # Только базовый поиск, без дополнительных плагинов
 
-  - ultralytics
+
 
 markdown_extensions:
   # Python Markdown
