@@ -1,51 +1,51 @@
-site_name: 🚀 Maria Vulcu | DevOps Portfolio
-site_url: https://portfolio-app-prod-4f3dfbvo.azurewebsites.net/
-site_description: Cloud-native DevOps portfolio with live monitoring, CI/CD, and Infrastructure as Code
+site_name: DevOps Engineering Hub | Maria Vulcu
+site_url: https://docs.mariavulcu.dev/
+site_description: Technical documentation center for cloud-native projects, DevOps practices, and infrastructure automation
 site_author: Maria Vulcu
-repo_url: https://github.com/mvulcu/devops-portfolio
-repo_name: mvulcu/devops-portfolio
+repo_url: https://github.com/mvulcu
+repo_name: mvulcu
 
 theme:
   name: material
   language: en
-  logo: images/logo.png  
-  favicon: images/logo.png  
+  logo: images/logo.png  # Раскомментируйте когда добавите логотип
+  # favicon: images/favicon.ico  # Раскомментируйте когда добавите иконку
   
   features:
-   
-    - navigation.instant         
-    - navigation.tracking        
-    - navigation.tabs            
-    - navigation.sections        
-    - navigation.expand          
-    - navigation.path            
-    - navigation.top             
+    # Навигация
+    - navigation.instant         # мгновенная навигация без перезагрузки
+    - navigation.tracking        # обновление URL при прокрутке
+    - navigation.tabs            # верхние табы
+    - navigation.sections        # разделы в боковом меню
+    - navigation.expand          # автораскрытие секций
+    - navigation.path            # хлебные крошки
+    - navigation.top             # кнопка "наверх"
     
-   
-    - content.code.copy          
-    - content.code.annotate      
+    # Содержимое
+    - content.code.copy          # кнопка копирования кода
+    - content.code.annotate      # аннотации в коде
     
-   
-    - search.suggest             
-    - search.highlight           
-    - search.share               
+    # Поиск
+    - search.suggest             # автозаполнение поиска
+    - search.highlight           # подсветка найденных слов
+    - search.share               # поделиться результатами поиска
     
-    
-    - toc.follow                 
-    - toc.integrate              
+    # Оглавление
+    - toc.follow                 # следование за прокруткой
+    - toc.integrate              # интеграция в контент
 
   palette:
-    
+    # Светлая тема
     - scheme: default
-      primary: indigo
-      accent: amber
+      primary: blue grey
+      accent: purple
       toggle:
         icon: material/weather-sunny
         name: Переключить на темную тему
     
-    
+    # Темная тема
     - scheme: slate
-      primary: cyan
+      primary: grey
       accent: amber
       toggle:
         icon: material/weather-night
@@ -59,9 +59,10 @@ theme:
     repo: fontawesome/brands/github
 
 plugins:
-  - search  
+  - search  # Только базовый поиск, без дополнительных плагинов
   
-
+  # Социальные карточки ОТКЛЮЧЕНЫ (требуют cairo)
+  # - social
 
 markdown_extensions:
   # Python Markdown
@@ -109,17 +110,30 @@ extra:
       link: https://linkedin.com/in/mariavulcu
       name: LinkedIn Profile
 
-# Additional styles (optional)
+# Дополнительные стили (опционально)
 extra_css:
   - stylesheets/extra.css
 
-# Navigation
+# Навигация
 nav:
   - 🏠 Home: index.md
-  - 📚 Documentation:
-    - ☁️ Azure Deployment: deployment.md
-    - 📊 Monitoring: monitoring.md
+  - 💼 Projects:
+    - 📊 DevOps Portfolio:
+      - Overview: portfolio/index.md
+      - Azure Deployment: portfolio/deployment.md
+      - Monitoring Strategy: portfolio/monitoring.md
+    - 🎭 KulturHub:
+      - Overview: kulturHub/index.md
+      - Architecture: kulturHub/architecture.md
+      - Infrastructure: kulturHub/infrastructure.md
+      - CI/CD Pipeline: kulturHub/cicd.md
+      - Security: kulturHub/security.md
+      - Monitoring: kulturHub/monitoring.md
+      - Microservices: kulturHub/microservices.md
+      - Cost Optimization: kulturHub/optimization.md
+      - Learning Outcomes: kulturHub/learning.md
+  - 📬 Contact: contact.md
   
-# Copyrights
+# Авторские права
 copyright: |
   &copy; 2024 Maria Vulcu | Built with Material for MkDocs

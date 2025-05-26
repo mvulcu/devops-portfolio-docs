@@ -30,7 +30,7 @@ This repository contains the technical documentation for the **DevOps Portfolio*
 
 ## 🗂️ Structure
 
-````
+```
 docs/
 ├── index.md
 ├── deployment.md
@@ -42,6 +42,7 @@ mkdocs.yml
 requirements.txt
 .gitignore
 README.md
+
 ```
 
 ## 🌐 Deployment
