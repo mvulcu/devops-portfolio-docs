@@ -3,6 +3,3 @@ mkdocs-git-revision-date-localized-plugin>=1.2.0
 mkdocs-minify-plugin>=0.8.0
 Pillow>=10.0.0
 cairosvg>=2.7.0
-mkdocs-material
-mkdocs-seo-plugin
-pymdown-extensions
