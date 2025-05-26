@@ -1,14 +1,15 @@
 ---
-title: DevOps Engineering Hub
-description: Technical documentation, live projects, and cloud infrastructure by Maria Vulcu
+title: KulturHub – DevOps Architecture
+description: Scalable cloud-native event management platform with RBAC, monitoring, and CI/CD.
+keywords: DevOps, Azure, IaC, Next.js, Bicep
 icon: material/book-open-page-variant
 ---
 
-# :material-book-open-page-variant: DevOps Engineering Hub { .text-center }
+# :material-book-open-page-variant:  DevOps Engineering Hub | Maria Vulcu
 
 <div class="hero-section" markdown>
-**Welcome to my technical documentation center**  
-Explore comprehensive guides, cloud architectures, and live production systems
+👋 I'm Maria Vulcu, DevOps Engineer & Cloud Architect.
+Welcome to my professional documentation hub featuring technical guides, detailed project architectures, and live cloud-native deployments.
 </div>
 
 
@@ -32,6 +33,14 @@ Explore comprehensive guides, cloud architectures, and live production systems
 
 ### :material-monitor-dashboard: DevOps Portfolio
 > **Cloud-native portfolio with real-time monitoring**
+
+**About This Documentation**
+
+This documentation site demonstrates DevOps best practices:<br>
+- Built and deployed automatically via GitHub Actions (CI/CD).<br>
+- Infrastructure managed via Infrastructure-as-Code (Bicep).<br>
+- Real-time monitoring via Azure Application Insights.
+
 
 <div class="project-grid" markdown>
 

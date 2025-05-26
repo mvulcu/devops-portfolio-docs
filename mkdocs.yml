@@ -60,9 +60,8 @@ theme:
 
 plugins:
   - search  # Только базовый поиск, без дополнительных плагинов
-  
-  # Социальные карточки ОТКЛЮЧЕНЫ (требуют cairo)
-  # - social
+
+  - ultralytics
 
 markdown_extensions:
   # Python Markdown
@@ -132,7 +131,7 @@ nav:
       - Microservices: kulturHub/microservices.md
       - Cost Optimization: kulturHub/optimization.md
       - Learning Outcomes: kulturHub/learning.md
-  - 📬 Contact: contact.md
+  
   
 # Авторские права
 copyright: |
