@@ -1,38 +1,39 @@
 site_name: DevOps Engineering Hub | Maria Vulcu
-site_url: https://docs.mariavulcu.dev/
+site_url: https://docs-grepme-dev.storage.googleapis.com/
 site_description: Technical documentation center for cloud-native projects, DevOps practices, and infrastructure automation
 site_author: Maria Vulcu
 repo_url: https://github.com/mvulcu
 repo_name: mvulcu
+# use_directory_urls: true  # по умолчанию True — красивые URL без .html
 
 theme:
   name: material
   language: en
-  logo: images/logo.png  # Раскомментируйте когда добавите логотип
-  # favicon: images/favicon.ico  # Раскомментируйте когда добавите иконку
-  
+  # logo: images/logo.png
+  # favicon: images/favicon.ico
+
   features:
     # Навигация
-    - navigation.instant         # мгновенная навигация без перезагрузки
-    - navigation.tracking        # обновление URL при прокрутке
-    - navigation.tabs            # верхние табы
-    - navigation.sections        # разделы в боковом меню
-    - navigation.expand          # автораскрытие секций
-    - navigation.path            # хлебные крошки
-    - navigation.top             # кнопка "наверх"
-    
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+
     # Содержимое
-    - content.code.copy          # кнопка копирования кода
-    - content.code.annotate      # аннотации в коде
-    
+    - content.code.copy
+    - content.code.annotate
+
     # Поиск
-    - search.suggest             # автозаполнение поиска
-    - search.highlight           # подсветка найденных слов
-    - search.share               # поделиться результатами поиска
-    
+    - search.suggest
+    - search.highlight
+    - search.share
+
     # Оглавление
-    - toc.follow                 # следование за прокруткой
-    - toc.integrate              # интеграция в контент
+    - toc.follow
+    - toc.integrate
 
   palette:
     # Светлая тема
@@ -42,7 +43,7 @@ theme:
       toggle:
         icon: material/weather-sunny
         name: Переключить на темную тему
-    
+
     # Темная тема
     - scheme: slate
       primary: grey
@@ -59,9 +60,7 @@ theme:
     repo: fontawesome/brands/github
 
 plugins:
-  - search  # Только базовый поиск, без дополнительных плагинов
-
-
+  - search
 
 markdown_extensions:
   # Python Markdown
@@ -74,7 +73,7 @@ markdown_extensions:
   - toc:
       permalink: true
   - tables
-  
+
   # Python Markdown Extensions
   - pymdownx.betterem:
       smart_enable: all
@@ -115,24 +114,24 @@ extra_css:
 
 # Навигация
 nav:
-  - 🏠 Home: index.md
-  - 💼 Projects:
-    - 📊 DevOps Portfolio:
-      - Overview: portfolio/index.md
-      - Azure Deployment: portfolio/deployment.md
-      - Monitoring Strategy: portfolio/monitoring.md
-    - 🎭 KulturHub:
-      - Overview: kulturHub/index.md
-      - Architecture: kulturHub/architecture.md
-      - Infrastructure: kulturHub/infrastructure.md
-      - CI/CD Pipeline: kulturHub/cicd.md
-      - Security: kulturHub/security.md
-      - Monitoring: kulturHub/monitoring.md
-      - Microservices: kulturHub/microservices.md
-      - Cost Optimization: kulturHub/optimization.md
-      - Learning Outcomes: kulturHub/learning.md
-  
-  
+  - "🏠 Home": index.md
+  - "💼 Projects":
+    - "📊 DevOps Portfolio":
+      - "Overview": portfolio/index.md
+      - "🌤️ Azure Era (Legacy)": portfolio/deployment.md
+      - "☁️ Migration to GCP": portfolio/migration.md
+      - "📊 Monitoring Evolution": portfolio/monitoring.md
+    - "🎭 KulturHub":
+      - "Overview": kulturHub/index.md
+      - "Architecture": kulturHub/architecture.md
+      - "Infrastructure": kulturHub/infrastructure.md
+      - "CI/CD Pipeline": kulturHub/cicd.md
+      - "Security": kulturHub/security.md
+      - "Monitoring": kulturHub/monitoring.md
+      - "Microservices": kulturHub/microservices.md
+      - "Cost Optimization": kulturHub/optimization.md
+      - "Learning Outcomes": kulturHub/learning.md
+
 # Авторские права
 copyright: |
-  &copy; 2024 Maria Vulcu 
+  &copy; 2024 Maria Vulcu

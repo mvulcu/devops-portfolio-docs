@@ -22,17 +22,25 @@ icon: material/monitor-dashboard
 
     Custom Azure Function providing centralized metrics endpoint with system health indicators
 
-    [:octicons-pulse-24: Explore API](#azure-function-health-check-api){ .md-button }
+    [:octicons-pulse-24: Explore API](#health-check-api-evolution){ .md-button }
 
 </div>
 
 ## :material-map: Overview
 
-!!! abstract "Monitoring Architecture"
-    The monitoring strategy demonstrates practical cloud monitoring with three key objectives:
+!!! info "Platform Evolution - Azure to GCP Migration"
+    This monitoring documentation covers both the original Azure-based monitoring setup and the current GCP implementation.
+    
+    **Migration Status:** The project was successfully migrated from Azure to GCP in October 2024.
+    
+    [:material-cloud-sync: View Full Migration Journey](migration.md){ .md-button .md-button--primary }
+
+!!! abstract "Monitoring Architecture Evolution"
+    The monitoring strategy demonstrates practical cloud monitoring across both platforms:
     
     - **Real-time Health Status** - Visible health metrics on the main page
-    - **Performance Metrics** - Track latency, memory, and resource usage
+    - **Performance Metrics** - Track latency, memory, and resource usage  
+    - **Platform Migration** - Azure Functions → GCP Cloud Run monitoring
     - **Usage Analytics** - User interactions with privacy-first approach
 
 ```mermaid
@@ -99,13 +107,23 @@ graph TB
     - Responsive design for all devices
     - Smooth animations and transitions
 
-### Azure Function Health Check API
+### Health Check API Evolution
 
-!!! example "Centralized Health Metrics Endpoint"
-    
-    **Endpoint:** `https://portfolio-function-monitoring.azurewebsites.net/api/healthcheck`
-    
-    **Technology:** Node.js Azure Function
+=== "Current: GCP Cloud Run"
+
+    !!! success "Cloud Run Health Metrics"
+        
+        **Platform:** Google Cloud Run (current)
+        **Technology:** Node.js containerized service
+        **Benefits:** Better cold starts, serverless scaling
+
+=== "Legacy: Azure Functions"
+
+    !!! example "Azure Function Health Check API (Legacy)"
+        
+        **Endpoint:** `https://portfolio-function-monitoring.azurewebsites.net/api/healthcheck`
+        **Technology:** Node.js Azure Function
+        **Status:** Migrated to GCP in October 2024
 
 <div class="grid" markdown>
 
@@ -164,10 +182,25 @@ sequenceDiagram
 - **Response:** JSON with process metrics<br>
 - **Purpose:** Azure's built-in health checks
 
-### Azure Application Insights
+### Monitoring Platform Evolution
 
-!!! success "Comprehensive Telemetry Platform"
-    Full-stack monitoring from client interactions to server performance
+=== "Current: GCP Cloud Monitoring"
+
+    !!! success "Google Cloud Monitoring & Logging"
+        Built-in observability with Cloud Run integration
+        
+        **Features:**
+        - Container metrics and logs
+        - Real-time monitoring
+        - Distributed tracing support
+        - Cost-effective pricing
+
+=== "Legacy: Azure Application Insights"
+
+    !!! info "Azure Application Insights (Legacy)"
+        Full-stack monitoring from client interactions to server performance
+        
+        **Status:** Replaced with GCP Cloud Monitoring during migration
 
 <div class="grid cards" markdown>
 
@@ -397,7 +430,8 @@ graph LR
 
 **Part of the DevOps Portfolio project by Maria Vulcu**
 
-[:material-arrow-left: Azure Deployment](deployment.md){ .md-button }
-[:material-arrow-up: Back to Home](index.md){ .md-button .md-button--primary }
+[:material-arrow-left: Azure Deployment (Legacy)](deployment.md){ .md-button }
+[:material-cloud-sync: Migration Journey](migration.md){ .md-button .md-button--primary }
+[:material-arrow-up: Back to Home](index.md){ .md-button }
 
 </div>

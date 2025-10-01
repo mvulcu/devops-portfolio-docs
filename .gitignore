@@ -1,25 +1,64 @@
-# MkDocs build output
+# === MkDocs ===
+# Сайт, который генерирует mkdocs build
 /site/
+# Если Firebase / Netlify / другие билды
+/public/
 
-# Python cache
+# === Python ===
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
 
-# Virtual environments
+# Виртуальные окружения
 .env/
 .venv/
 env/
 venv/
+mkdocs-env/
 
-# VSCode and IDEs
+# Пакеты и зависимости
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Кэш
+*.cache
+*.pytest_cache/
+*.mypy_cache/
+.dmypy.json
+.dmypy/
+
+# === Node.js ===
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# === VSCode / IDE ===
 .vscode/
 .idea/
+*.swp
+*.swo
 
-# OS and metadata files
+# === OS специфичное ===
 .DS_Store
 Thumbs.db
+ehthumbs.db
+Desktop.ini
 
-# Node.js (optional)
-node_modules/
+# === Логи ===
+*.log
+
+# === Бэкапы и прочее ===
+*.bak
+*.tmp
+*.temp
+*.old
+
+# === Firebase / Deploy ===
+.firebase/
+.firebaserc
+firebase-debug.log

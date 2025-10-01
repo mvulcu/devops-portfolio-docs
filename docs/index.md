@@ -38,19 +38,26 @@ Welcome to my professional documentation hub featuring technical guides, detaile
 
 <div class="project-info" markdown>
 
-**Live Demo:** [portfolio-app-prod-4f3dfbvo.azurewebsites.net](https://portfolio-app-prod-4f3dfbvo.azurewebsites.net)
+**Live Demo:** [grepme.dev](https://grepme.dev)
 
-**Tech Stack:**<br>
+**Current Tech Stack (GCP):**<br>
 - Frontend: Next.js 14, TypeScript, Tailwind CSS<br>
-- Backend: Azure Functions, Docker<br>
-- Infrastructure: Azure Bicep, GitHub Actions<br>
-- Monitoring: Application Insights, Custom Dashboards<br>
+- Backend: GCP Cloud Run (serverless containers)<br>
+- Infrastructure: Terraform (Infrastructure as Code)<br>
+- CI/CD: GitHub Actions with Docker<br>
+- Monitoring: Google Cloud Monitoring & Logging<br>
+
+**Migration Journey:**<br>
+- ✅ **Successfully migrated from Azure to GCP** (October 2024)<br>
+- ✅ **60% cost reduction** using GCP Free Tier<br>
+- ✅ **Improved performance** with faster cold starts<br>
 
 **Key Features:**<br>
 - ✅ Real-time health monitoring dashboard<br>
 - ✅ Automated CI/CD with GitHub Actions<br>
-- ✅ Infrastructure as Code (Bicep)<br>
+- ✅ Infrastructure as Code (Bicep + Terraform)<br>
 - ✅ Multi-environment deployments<br>
+- ✅ **Azure to GCP Migration** (Oct 2024)<br>
 - ✅ GDPR-compliant analytics
 
 </div>
@@ -59,7 +66,8 @@ Welcome to my professional documentation hub featuring technical guides, detaile
 
 **Documentation:**<br>
 - [:material-file-document: Overview](portfolio/index.md)<br>
-- [:material-microsoft-azure: Azure Deployment](portfolio/deployment.md)<br>
+- [:material-microsoft-azure: Azure Deployment (Legacy)](portfolio/deployment.md)<br>
+- [:material-cloud-sync: Azure → GCP Migration](portfolio/migration.md)<br>
 - [:material-chart-line: Monitoring Strategy](portfolio/monitoring.md)<br>
 
 **Status:**
@@ -137,8 +145,8 @@ Welcome to my professional documentation hub featuring technical guides, detaile
 Have questions about the projects or want to collaborate?
 
 [:material-github: GitHub](https://github.com/mvulcu){ .md-button }
-[:material-linkedin: LinkedIn](https://linkedin.com/in/mariavulcu){ .md-button }
-[:material-email: Email](mailto:contact@mariavulcu.dev){ .md-button }
+[:material-linkedin: LinkedIn](https://www.linkedin.com/in/mariavulcu){ .md-button }
+[:material-email: Email](mailto:ping@grepme.dev){ .md-button }
 
 ---
 

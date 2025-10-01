@@ -28,8 +28,15 @@ icon: material/microsoft-azure
 
 ## :material-map-marker-path: Overview
 
-!!! warning "Azure Student Subscription"
-    This project is deployed on Azure Student subscription which has certain limitations:
+!!! info "Historical Context - Azure Era"
+    This documentation represents the original Azure deployment architecture of the DevOps Portfolio project.
+    
+    **Current Status:** This project has been **migrated to Google Cloud Platform** in October 2024.
+    
+    [:material-cloud-sync: View Migration Journey](migration.md){ .md-button .md-button--primary }
+
+!!! warning "Azure Student Subscription (Legacy)"
+    The original Azure deployment used Azure Student subscription with these limitations:
     
     - ❌ No Key Vault access
     - ❌ No custom RBAC roles
@@ -457,7 +464,8 @@ https://portfolio-function-monitoring.azurewebsites.net/api/healthcheck
 
 **Part of the DevOps Portfolio project by Maria Vulcu**
 
-[:material-arrow-left: Back to Home](index.md){ .md-button }
-[:material-arrow-right: View Monitoring](monitoring.md){ .md-button .md-button--primary }
+[:material-arrow-left: Back to Portfolio](index.md){ .md-button }
+[:material-cloud-sync: Migration Journey](migration.md){ .md-button .md-button--primary }
+[:material-monitor-dashboard: Monitoring Strategy](monitoring.md){ .md-button }
 
 </div>

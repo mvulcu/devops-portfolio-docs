@@ -15,7 +15,7 @@ status: new
 
     Not just a portfolio – a fully-fledged cloud application with real-time monitoring, automated deployments, and infrastructure as code
 
-    [:octicons-arrow-right-24: View Live Demo](https://portfolio-app-prod-4f3dfbvo.azurewebsites.net){ .md-button }
+    [:octicons-arrow-right-24: View Live Demo](https://grepme.dev){ .md-button }
 
 -   :material-chart-line:{ .lg .middle } __Live Monitoring Dashboard__
 
@@ -25,7 +25,7 @@ status: new
     <br>
     <br>
     
-    [:octicons-graph-24: Check Health Status](https://portfolio-function-monitoring.azurewebsites.net/api/healthcheck){ .md-button .md-button--primary }
+    [:octicons-graph-24: Check Health Status](https://grepme.dev/api/health){ .md-button .md-button--primary }
 
 </div>
 
@@ -33,9 +33,17 @@ status: new
 
 !!! example "Live Production Environment"
     
-    🚀 **Production URL:** [portfolio-app-prod-4f3dfbvo.azurewebsites.net](https://portfolio-app-prod-4f3dfbvo.azurewebsites.net)
+    🚀 **Production URL:** [grepme.dev](https://grepme.dev)
     
-    📊 **Monitoring API:** [Health Check Endpoint](https://portfolio-function-monitoring.azurewebsites.net/api/healthcheck)
+    📊 **Monitoring API:** [Health Check Endpoint](https://grepme.dev/api/health)
+
+!!! info "Platform Evolution Journey"
+    
+    🌤️ **Originally deployed on Microsoft Azure** with comprehensive Bicep IaC templates
+    
+    ☁️ **Migrated to Google Cloud Platform** in October 2024 for cost optimization and performance improvements
+    
+    [:material-cloud-sync: View Migration Story](migration.md){ .md-button }
        
 ## :material-stack-overflow: Tech Stack
 
@@ -249,6 +257,14 @@ graph TD
 ```
 
 <div class="text-center" markdown>
+
+**DevOps Portfolio Evolution Journey**
+
+[:material-microsoft-azure: Original Azure Architecture](deployment.md){ .md-button }
+[:material-cloud-sync: Migration to GCP](migration.md){ .md-button .md-button--primary }
+[:material-monitor-dashboard: Monitoring Strategy](monitoring.md){ .md-button }
+
+---
 
 **Built with** :material-heart: **by Maria Vulcu**
 
