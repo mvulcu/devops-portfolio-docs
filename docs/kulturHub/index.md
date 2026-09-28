@@ -4,20 +4,23 @@ description: Enterprise-grade event management platform with full DevOps lifecyc
 icon: material/calendar-star
 ---
 
+!!! info "My project, reviewed source and limits"
+    I describe architecture I implemented, earlier designs and proposed improvements. The linked application repository is `mvulcu/kulturhub_6` at `master` (reviewed 28 September 2026; companion application change: [draft PR #1](https://github.com/mvulcu/kulturhub_6/pull/1)). A source file proves an implementation exists in that branch; it does not certify the currently running Azure configuration.
+
 # :material-calendar-star: KulturHub - Event Management Platform
 
 <div class="hero-section" markdown>
-**Scalable and secure platform for cultural event management**  
-A comprehensive DevOps project showcasing modern cloud architecture and automation
+**An event platform and an engineering case study**  
+I built KulturHub to explore application delivery on Azure under a student budget. I kept the earlier Azure architecture in the documentation so the trade-offs behind each change remain visible.
 </div>
 
 <div class="grid cards" markdown>
 
--   :material-web:{ .lg .middle } __Live Production__
+-   :material-web:{ .lg .middle } __Application deployment__
 
     ---
 
-    Experience the platform with full functionality for event discovery and management
+    The original deployment URL is listed here for historical reference. Check its current availability before using it as evidence of a live service.
 
     [:octicons-arrow-right-24: Visit Live Site](https://kulturhub-app-prod.azurewebsites.net){ .md-button .md-button--primary }
 
@@ -35,7 +38,7 @@ A comprehensive DevOps project showcasing modern cloud architecture and automati
 
     Review implementation details and DevOps practices
 
-    [:octicons-mark-github-24: Private Repository](https://github.com/mvulcu){ .md-button }
+    [:octicons-mark-github-24: Application source](https://github.com/mvulcu/kulturhub_6){ .md-button }
 
 </div>
 
@@ -60,7 +63,7 @@ KulturHub is a **full-stack cloud-native platform** for managing cultural events
 : Image uploads with CDN support
 
 :material-shield-account:{ .lg } **Secure Access**
-: JWT authentication and RBAC
+: Server-side sessions and API role checks
 
 :material-chart-line:{ .lg } **Real Monitoring**
 : Live metrics and dashboards
@@ -80,7 +83,7 @@ timeline
     
     May 2025          : Infrastructure Optimization
                       : MongoDB Atlas Migration
-                      : Cost Reduction to Near-Zero
+                      : Cost Reduction Under Student Budget
                       : Open Source Monitoring
 ```
 
@@ -92,7 +95,7 @@ timeline
 
     ---
     
-    - **Framework:** Next.js 14
+    - **Framework:** Next.js 15 (reviewed source)
     - **Styling:** Tailwind CSS
     - **Components:** shadcn/ui
     - **Type Safety:** TypeScript
@@ -133,7 +136,7 @@ timeline
 
 -   :material-network:{ .lg } __[Network & Security](security.md)__
     
-    Zero Trust implementation and isolation
+    Authentication, API authorization and network history
 
 </div>
 
@@ -161,7 +164,7 @@ timeline
 
 -   :material-currency-usd:{ .lg } __[Cost Optimization](optimization.md)__
     
-    May 2025 migration and near-zero costs
+    May 2025 migration and cost model
 
 -   :material-school:{ .lg } __[Learning Outcomes](learning.md)__
     
@@ -177,17 +180,17 @@ timeline
 
     <div class="stats-grid" markdown>
     
-    :material-percent:{ .lg } **95%**
-    : Cost reduction achieved
+    :material-percent:{ .lg } **~86–89%**
+    : Modelled reduction using the historical estimates in the cost chapter; not verified against invoices
     
-    :material-timer:{ .lg } **10 min**
-    : Full disaster recovery
+    :material-timer:{ .lg } **Rollback**
+    : Image rollback procedure documented; restore time requires a timed exercise
     
-    :material-package-variant:{ .lg } **150MB**
-    : Optimized Docker image
+    :material-package-variant:{ .lg } **Multi-stage**
+    : Container build; image size depends on the built artifact
     
-    :material-file-code:{ .lg } **100%**
-    : Infrastructure as Code
+    :material-file-code:{ .lg } **Bicep**
+    : Azure resources described as code; external MongoDB Atlas managed separately
     
     </div>
 

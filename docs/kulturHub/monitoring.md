@@ -4,11 +4,14 @@ description: Comprehensive monitoring strategy for KulturHub
 icon: material/monitor-dashboard
 ---
 
+!!! info "Health signals are scoped"
+    `/api/health` checks a critical dependency and should return HTTP 503 when MongoDB is unavailable. Process uptime reports one Node.js process, not monthly service availability. I use Azure App Service Health Check for readiness and would use external probes for an uptime percentage.
+
 # :material-monitor-dashboard: Monitoring & Observability
 
 ## Overview
 
-KulturHub implements a multi-layered monitoring strategy combining Azure-native tools with open-source solutions. This approach provides comprehensive visibility into application health, performance, and user behavior while maintaining cost efficiency.
+I added an application health route that pings MongoDB and a small Telegraf metrics helper for API events. Telegraf emission is conditional on `TELEGRAF_ENABLED`; the Grafana/InfluxDB deployment described below is an operational design whose current hosting must be checked independently.
 
 ## Monitoring Architecture
 
@@ -148,7 +151,7 @@ export const logger = {
 
 ### 2. Grafana + InfluxDB + Telegraf
 
-The custom monitoring stack on Azure VM:
+The historical/self-hosted monitoring design on an Azure VM (verify the deployed VM and dashboards before presenting as current):
 
 ```mermaid
 graph LR
@@ -438,13 +441,13 @@ Response time targets:
 | Endpoint | Target | Actual P95 |
 |----------|--------|------------|
 | GET /api/events | < 100ms | 87ms |
-| POST /api/auth/login | < 200ms | 156ms |
+| POST /api/auth | Define after measurement | No reproducible benchmark attached |
 | POST /api/events/:id/rsvp | < 150ms | 123ms |
 | GET /api/users/:id | < 50ms | 42ms |
 
 ## Cost Optimization
 
-### Monitoring Cost Breakdown
+### Monitoring Cost Breakdown (historical estimate; exclude VM only if not deployed)
 
 | Component | Original Cost | Optimized Cost | Savings |
 |-----------|---------------|----------------|---------|

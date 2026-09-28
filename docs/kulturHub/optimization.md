@@ -4,11 +4,14 @@ description: From Azure-native to near-zero cost architecture
 icon: material/currency-usd
 ---
 
+!!! info "Method and limitations"
+    I compare estimated monthly component costs for the two designs. The $92 average monthly saving is an estimate based on those assumptions. A verified savings claim needs Azure invoices, Atlas billing, currency, time window and the actual deployment inventory. A monitoring VM or additional App Service instances would increase the new total.
+
 # :material-currency-usd: Cost Optimization Journey
 
 ## Overview
 
-In May 2025, KulturHub underwent a major architectural transformation to eliminate expensive Azure-specific services and achieve near-zero operational costs. This document details the optimization process, decisions made, and results achieved.
+In May 2025, I simplified the KulturHub design to fit a student budget: I moved the database from Cosmos DB to MongoDB Atlas and removed Application Insights from the proposed steady-state stack. The amounts below are historical estimates, not exported invoices or a current price quote.
 
 ## Initial Architecture Costs
 
@@ -186,7 +189,7 @@ graph TB
     style F fill:#0078d4,stroke:#fff,stroke-width:2px,color:#fff
 ```
 
-## Cost Comparison
+## Cost Comparison (historical estimates)
 
 ### Before vs After
 
@@ -227,9 +230,9 @@ graph LR
 
 ### Percentage Reduction
 
-- **Cost Reduction:** 89-93%
+- **Modelled cost reduction:** about 86–89% ($93–118 before, roughly $13.50 after)
 - **Complexity Reduction:** ~70%
-- **Azure Dependency:** -95%
+- **Azure dependencies:** App Service and Blob Storage remain
 
 ## Technical Improvements
 
@@ -282,11 +285,11 @@ graph LR
 ### Alternative Stack
 
 1. **Development:** Console logging
-2. **Production:** Telegraf + InfluxDB + Grafana
+2. **Optional self-hosted monitoring:** Telegraf + InfluxDB + Grafana (include VM cost if deployed)
 3. **Errors:** Structured logging to files
 4. **Alerts:** Custom threshold monitoring
 
-### Cost Comparison
+### Cost Comparison (historical estimates)
 
 | Solution | Features | Cost |
 |----------|----------|------|
@@ -360,7 +363,7 @@ az consumption usage list \
 |------|--------------|------------------|
 | Database | Cosmos DB | MongoDB Atlas |
 | Monitoring | App Insights | Grafana + OSS |
-| Auth | Entra ID | JWT + bcrypt |
+| Authentication | Managed identity provider | Server-side MongoDB session + bcrypt |
 | Secrets | Key Vault | GitHub Secrets |
 | CDN | Front Door | Cloudflare |
 
@@ -379,7 +382,7 @@ Consider paid services when:
 
 ```mermaid
 graph LR
-    A[Current<br/>Near-Zero Cost] --> B[Growth Phase<br/>~$50/month]
+    A[Simplified<br/>Cost Model] --> B[Growth Phase<br/>~$50/month]
     B --> C[Scale Phase<br/>~$200/month]
     C --> D[Enterprise<br/>Custom Pricing]
     
@@ -391,8 +394,8 @@ graph LR
 
 The optimization journey successfully:
 
-- ✅ **Reduced costs by 90%**
-- ✅ **Maintained all functionality**
+- ✅ **Modelled substantial savings under the listed assumptions**
+- ✅ **Preserved the event-management goal; verify features against a deployed revision**
 - ✅ **Improved developer experience**
 - ✅ **Increased portability**
 - ✅ **Simplified architecture**

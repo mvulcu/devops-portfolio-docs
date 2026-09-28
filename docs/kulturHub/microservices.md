@@ -4,11 +4,14 @@ description: Event-driven microservices implementation in KulturHub
 icon: material/function-variant
 ---
 
+!!! info "Integration boundary"
+    The verified application-side implementation is [`lib/notify.ts`](https://github.com/mvulcu/kulturhub_6/blob/codex/kulturhub-core-hardening/lib/notify.ts). Its current error handler logs delivery failures; it does not provide durable retries or a delivery guarantee. I would add those only if notification delivery becomes a product requirement.
+
 # :material-function-variant: Microservices Architecture
 
 ## Overview
 
-KulturHub implements a microservices approach using Azure Functions for specific business capabilities. This architecture provides scalability, independent deployment, and clear separation of concerns while maintaining cost efficiency.
+I kept the main application as one Next.js service and called an external Azure Function for notifications. The email-function body, storage cleaner and image processor below are detailed reference designs. Their source and deployment are not present in the reviewed KulturHub repository; a production claim for each needs its own source link and run record.
 
 ## Microservices Design
 
@@ -58,7 +61,7 @@ graph TB
 
 ### Architecture
 
-The email notification service is implemented as an isolated Azure Function:
+The application invokes an external notification function via `AZURE_FUNCTION_URL` and `AZURE_FUNCTION_KEY`. The following function implementation illustrates the receiving side; link its own repository before treating the example as deployed:
 
 ```mermaid
 sequenceDiagram
@@ -264,7 +267,7 @@ export async function notifyUser(payload: EmailPayload) {
 
 ### Purpose
 
-Automatically clean up unused images and temporary files to optimize storage costs.
+A proposed scheduled function to clean unused files. The following code illustrates the design; it was not verified in this application repository.
 
 ### Implementation
 

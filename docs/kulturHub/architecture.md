@@ -8,7 +8,7 @@ icon: material/layers-triple
 
 ## Overview
 
-KulturHub implements a modern cloud-native architecture designed for scalability, security, and maintainability. The system follows microservices principles while maintaining cost efficiency for educational purposes.
+I designed KulturHub as a Next.js application on Azure App Service with MongoDB Atlas and Blob Storage. I used a separate notification-function integration; the other function implementations below illustrate possible service boundaries. The earlier Azure-native network and database layout remains documented as a historical design.
 
 ## High-Level Architecture
 
@@ -26,7 +26,7 @@ graph TB
     end
     
     subgraph "Service Layer"
-        F[Authentication<br/>JWT + RBAC]
+        F[Authentication<br/>Session + RBAC]
         G[Business Logic<br/>Event Management]
         H[Email Service<br/>Azure Function]
     end
@@ -68,10 +68,10 @@ graph TB
 
 ### Frontend Architecture
 
-The frontend uses Next.js 14 with the App Router for optimal performance and SEO.
+The frontend uses Next.js 15 with the App Router for optimal performance and SEO.
 
 **Key Technologies:**<br>
-- **Framework:** Next.js 14 (App Router)<br>
+- **Framework:** Next.js 15 (App Router)<br>
 - **Language:** TypeScript for type safety<br>
 - **Styling:** Tailwind CSS for utility-first design<br>
 - **Components:** shadcn/ui for consistent UI<br>
@@ -105,7 +105,7 @@ api/
 
 **Key Features:**<br>
 - RESTful API design<br>
-- JWT-based authentication<br>
+- Server-side cookie session authentication<br>
 - Role-based access control<br>
 - Request validation middleware<br>
 - Error handling middleware<br>
@@ -220,39 +220,31 @@ graph LR
 
 ## Security Architecture
 
-### Authentication Flow
+### Authentication and authorization flow
 
 ```mermaid
 sequenceDiagram
-    participant User
-    participant Frontend
-    participant API
-    participant JWT
-    participant MongoDB
-    
-    User->>Frontend: Login credentials
-    Frontend->>API: POST /api/auth/login
-    API->>MongoDB: Verify credentials
-    MongoDB-->>API: User data
-    API->>JWT: Generate token
-    JWT-->>API: Signed token
-    API-->>Frontend: Token + user info
-    Frontend->>Frontend: Store in httpOnly cookie
-    
-    Note over Frontend: Subsequent requests
-    Frontend->>API: Request + Cookie
-    API->>JWT: Verify token
-    JWT-->>API: Claims
-    API-->>Frontend: Authorized response
+    participant Visitor
+    participant App as Next.js API
+    participant DB as MongoDB Atlas
+    Visitor->>App: POST /api/auth (credentials)
+    App->>DB: Verify password hash
+    App->>DB: Store hash of random session token
+    App-->>Visitor: HttpOnly session cookie
+    Visitor->>App: Protected API request with cookie
+    App->>DB: Check session, expiry and current user role
+    App-->>Visitor: 200, 401 or 403
 ```
+
+I enforce authorization in the route handlers, where the mutation occurs. The cookie holds an opaque random token; the database stores its SHA-256 hash and expiry. `SameSite=Lax` and `Secure` in production reduce cookie exposure. This is a server-side session design, not JWT. See [the implementation](https://github.com/mvulcu/kulturhub_6/blob/codex/kulturhub-core-hardening/lib/session.ts) and [Security](security.md).
 
 ### Security Layers
 
 1. **Application Security**
-   - JWT tokens with httpOnly cookies
+   - Opaque server-side sessions in httpOnly cookies
    - CORS configuration
    - Input validation and sanitization
-   - SQL injection prevention (MongoDB)
+   - MongoDB query validation and parameterized repository calls
    - XSS protection headers
 
 2. **Network Security**
@@ -264,12 +256,14 @@ sequenceDiagram
 3. **Data Security**
    - Passwords hashed with bcrypt
    - Environment variables for secrets
-   - No sensitive data in logs
+   - Avoid logging sensitive identifiers; review existing application logs
    - Encrypted data at rest
 
 ## Deployment Architecture
 
 ### Container Strategy
+
+The following is a historical design sketch. The tested build recipe is in [CI/CD](cicd.md) and the actual application Dockerfile.
 
 ```dockerfile
 # Multi-stage build for optimization

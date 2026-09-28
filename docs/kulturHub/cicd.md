@@ -1,460 +1,261 @@
 ---
-title: CI/CD Pipeline
-description: Automated build and deployment processes for KulturHub
+title: KulturHub | Container delivery and CI/CD
+description: GitHub Actions, GHCR, Azure App Service, rollback and operational decisions
 icon: material/pipe
 ---
 
-# :material-pipe: CI/CD Pipeline
+# CI/CD and container delivery
 
-## Overview
+I built KulturHub as a containerized Next.js application. GitHub Actions builds and publishes an image to GHCR; Azure App Service runs that image. The original repository contained two production deployment workflows. In this update I keep a single workflow to avoid competing deployments from the same push.
 
-KulturHub implements a comprehensive CI/CD pipeline using GitHub Actions, Docker, and GitHub Container Registry (GHCR). The pipeline automates building, testing, and deployment processes across development and production environments.
+**Source:** [application workflow](https://github.com/mvulcu/kulturhub_6/blob/codex/kulturhub-core-hardening/.github/workflows/ci-cd.yml) · [Dockerfile](https://github.com/mvulcu/kulturhub_6/blob/codex/kulturhub-core-hardening/Dockerfile) · [Bicep entry point](https://github.com/mvulcu/kulturhub_6/blob/codex/kulturhub-core-hardening/infra/bicep/main.bicep).
 
-## Pipeline Architecture
+## Delivery path
 
 ```mermaid
 flowchart TB
-    subgraph "Source Control"
-        A[GitHub Repository]
-        B[Feature Branch]
-        C[Main Branch]
-    end
-    
-    subgraph "CI Pipeline"
-        D[Lint & Format]
-        E[Run Tests]
-        F[Build Application]
-        G[Security Scan]
-    end
-    
-    subgraph "CD Pipeline"
-        H[Build Docker Image]
-        I[Push to GHCR]
-        J[Tag with SHA]
-        K[Deploy to Azure]
-    end
-    
-    subgraph "Environments"
-        L[Development]
-        M[Staging]
-        N[Production]
-    end
-    
-    B --> D
-    C --> D
-    D --> E
-    E --> F
-    F --> G
-    G --> H
-    H --> I
-    I --> J
-    J --> K
-    K --> L
-    K --> M
-    K --> N
-    
-    style A fill:#f081aa,stroke:#fff,stroke-width:2px,color:#fff
-    style H fill:#2188ff,stroke:#fff,stroke-width:2px,color:#fff
-    style I fill:#1f883d,stroke:#fff,stroke-width:2px,color:#fff
-    style N fill:#0078d4,stroke:#fff,stroke-width:2px,color:#fff
+    PR["Pull request to master/develop"] --> CHECK["Lint and build"]
+    CHECK --> IMAGE["Docker build"]
+    IMAGE --> GHCR["GHCR"]
+    GHCR --> DEV["Azure development app"]
+    GHCR --> PROD["Azure production app"]
+    PROD --> HEALTH["HTTP health probe"]
 ```
 
-## GitHub Actions Workflows
+| Trigger | Build and publish | Deployment |
+| --- | --- | --- |
+| Pull request to `master` or `develop` | Lint, Next.js build and Docker build; no image push | None |
+| Push to `develop` | Same checks; publish `develop` and commit SHA tags | Development App Service |
+| Push to `master` | Same checks; publish `master` and commit SHA tags | Production App Service, then `/api/health` check |
 
-### Continuous Integration (CI)
+This is the **proposed branch workflow**. An image can exist in a repository without proving it is the image currently serving traffic. I check the deployed Azure image setting and the Actions run before making a live-status claim.
 
-The CI workflow runs on every push and pull request:
+## Workflow implementation
+
+The workflow below is copied from the proposed application update. The `npm run build` step uses a build-phase flag and a placeholder URI: the app must never attempt to use that URI at runtime. App Service receives the real database connection string in application settings.
 
 ```yaml
-# .github/workflows/ci.yml
-name: CI
+name: Build & Deploy to Azure via GHCR
 
 on:
   push:
-    branches: [main, develop]
+    branches:
+      - master
+      - develop
   pull_request:
-    branches: [main]
-
-jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Run ESLint
-        run: npm run lint
-      
-      - name: Check formatting
-        run: npm run format:check
-
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Run unit tests
-        run: npm test
-      
-      - name: Run integration tests
-        run: npm run test:integration
-
-  build:
-    runs-on: ubuntu-latest
-    needs: [lint, test]
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Build application
-        run: npm run build
-      
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: build-artifacts
-          path: .next/
-```
-
-### Continuous Deployment (CD)
-
-The CD workflow handles Docker builds and Azure deployment:
-
-```yaml
-# .github/workflows/cd-prod.yml
-name: CD Production
-
-on:
-  push:
-    branches: [main]
+    branches:
+      - master
+      - develop
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-and-push:
+  build-and-test:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
-      
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
     steps:
-      - name: Deploy to Azure App Service
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: kulturhub-app-prod
-          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_PROD }}
-          images: ghcr.io/${{ github.repository }}:${{ github.sha }}
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run linting
+      run: npm run lint
+
+    - name: Verify production build
+      run: NEXT_PHASE=phase-production-build MONGODB_URI=mongodb://placeholder:1234 npm run build
+
+  build-and-push:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata for Docker
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha,format=short
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build and push image to GHCR
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: ${{ github.event_name != 'pull_request' }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  deploy-dev:
+    needs: build-and-push
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+    - name: Deploy to Azure Web App (Dev)
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: kulturhub-app-dev
+        publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_DEV }}
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:develop
+
+  deploy-prod:
+    needs: build-and-push
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    - name: Deploy to Azure Web App (Prod)
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: kulturhub-app-prod
+        publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_PROD }}
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:master 
+
+    - name: Verify deployed health
+      run: curl --fail --retry 6 --retry-delay 10 https://kulturhub-app-prod.azurewebsites.net/api/health
 ```
 
-## Docker Configuration
+The commit SHA tag gives me a stable rollback target, while `master` and `develop` tags are convenient moving pointers. The deployment step currently uses the moving pointer; changing it to the immutable commit tag is a sensible next improvement once the basic release flow is verified.
 
-### Multi-Stage Dockerfile
+## Docker build
 
-The Dockerfile uses multi-stage builds for optimization:
+The multi-stage build installs dependencies and compiles Next.js, then copies the standalone server and static assets into a runtime image. The placeholder MongoDB URI is used for build-time behaviour only. I do not pass the real MongoDB URI to `docker build`.
 
 ```dockerfile
-# Base dependencies
-FROM node:18-alpine AS deps
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-
-# Build stage
+# ---- BUILD STAGE ----
 FROM node:18-alpine AS builder
+
 WORKDIR /app
-COPY package*.json ./
+
+RUN apk add --no-cache \
+  python3 \
+  py3-pip \
+  make \
+  g++ \
+  krb5-dev
+
+COPY package.json package-lock.json ./
 RUN npm ci
+
 COPY . .
 
-# Build arguments for environment variables
-ARG NEXT_PUBLIC_API_URL
-ARG MONGODB_URI
+# Set build phase flag for MongoDB connection handling
+ENV NEXT_PHASE=phase-production-build
 
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-ENV MONGODB_URI=$MONGODB_URI
+# Run the build with a placeholder MongoDB URI for build time
+RUN MONGODB_URI="mongodb://placeholder:1234" npm run build
 
-RUN npm run build
+# Reset phase flag for runtime
+ENV NEXT_PHASE=""
 
-# Production image
+# ---- RUNTIME STAGE ----
 FROM node:18-alpine AS runner
+
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/static ./.next/static
 
-USER nextjs
-
 EXPOSE 3000
-ENV PORT 3000
 
 CMD ["node", "server.js"]
 ```
 
-### Image Optimization
+**Next improvement:** run the final image as a dedicated non-root user and update the Node base image after validating native MongoDB packages. The existing Dockerfile does not yet do either, so I do not present them as implemented controls.
 
-Key optimization strategies:
+## Infrastructure and environments
 
-1. **Multi-stage builds** - Separate build and runtime
-2. **Alpine Linux** - Minimal base image
-3. **Production dependencies only** - Reduced image size
-4. **Non-root user** - Security best practice
-5. **Layer caching** - Faster builds
+I use Bicep for the Azure App Service plan, site, storage and network resources. `develop` and `master` map to distinct app names in the workflow. Bicep provisions a B1 plan, where scaling is manual; I do not need a separate paid staging environment for this portfolio project.
 
-## Deployment Strategy
+Runtime configuration belongs to the App Service settings. GitHub Actions uses publish profiles for deployment; the MongoDB URI and Azure Storage connection string should not be baked into the image or printed as Bicep outputs. The [App Service module](https://github.com/mvulcu/kulturhub_6/blob/codex/kulturhub-core-hardening/infra/bicep/modules/app/appService.bicep) resolves the storage key inside the deployment. Azure recommends keeping secrets out of deployment outputs.
 
-### Environment Management
+## Post-deployment check and rollback
 
-```mermaid
-graph LR
-    subgraph "Branches"
-        A[feature/*]
-        B[develop]
-        C[main]
-    end
-    
-    subgraph "Environments"
-        D[Local Dev]
-        E[Development]
-        F[Staging]
-        G[Production]
-    end
-    
-    A --> D
-    B --> E
-    B --> F
-    C --> G
-    
-    style C fill:#0969da,stroke:#fff,stroke-width:2px,color:#fff
-    style G fill:#1f883d,stroke:#fff,stroke-width:2px,color:#fff
-```
+The workflow checks `/api/health` after production deployment. That route pings MongoDB and responds with HTTP 503 when the dependency is unavailable. A successful probe proves this request completed; it does not establish an uptime percentage.
 
-### Deployment Process
-
-1. **Code Push** - Developer pushes to branch
-2. **CI Checks** - Automated tests and linting
-3. **Docker Build** - Container image creation
-4. **Registry Push** - Image pushed to GHCR
-5. **Azure Deploy** - App Service pulls new image
-6. **Health Check** - Verify deployment success
-
-### Rollback Strategy
-
-SHA-based tagging enables quick rollbacks:
+If a release fails, I identify the last known-good commit tag in GHCR, configure App Service to use that image, then recheck health and a real user flow. Example commands (replace the resource group and tag with the actual release):
 
 ```bash
-# View available tags
-docker images ghcr.io/mvulcu/kulturhub
-
-# Rollback to specific version
 az webapp config container set \
+  --resource-group <resource-group> \
   --name kulturhub-app-prod \
-  --resource-group kulturhub-rg-prod \
-  --docker-custom-image-name ghcr.io/mvulcu/kulturhub:main-abc123
+  --docker-custom-image-name ghcr.io/mvulcu/kulturhub_6:sha-<short-commit>
+
+curl --fail https://kulturhub-app-prod.azurewebsites.net/api/health
 ```
 
-## Secrets Management
+Changing the container setting is a **manual rollback procedure**; I would time an actual restore exercise before quoting a recovery time. I would also check image pull permissions for private GHCR packages.
 
-### GitHub Secrets Configuration
+## Secrets and permissions
 
-Required secrets for the pipeline:
+| Secret or permission | Used by | Handling |
+| --- | --- | --- |
+| `AZURE_PUBLISH_PROFILE_PROD` / `AZURE_PUBLISH_PROFILE_DEV` | GitHub Actions deployment | GitHub environment or repository secret, scope to the intended app |
+| `MONGODB_URI` | Next.js runtime | Azure App Service setting, never a Docker build argument |
+| Azure Storage account key | Image upload runtime | Resolved within the deployment; do not export the connection string |
+| `AZURE_FUNCTION_KEY` | Notification integration | Runtime setting; rotate if exposed |
+| `GITHUB_TOKEN` with package write | GHCR publish | Workflow-scoped token permission |
 
-| Secret Name | Purpose | Scope |
-|------------|---------|-------|
-| `AZURE_PUBLISH_PROFILE_PROD` | Production deployment | Repository |
-| `AZURE_PUBLISH_PROFILE_DEV` | Development deployment | Repository |
-| `MONGODB_URI` | Database connection | Repository |
-| `SENDGRID_API_KEY` | Email service | Repository |
-| `AZURE_STORAGE_CONNECTION_STRING` | Blob storage | Repository |
-
-### Setting Secrets
-
-```bash
-# Add secret via GitHub CLI
-gh secret set MONGODB_URI --body "mongodb+srv://..."
-
-# Or via GitHub UI
-# Settings > Secrets and variables > Actions > New repository secret
-```
-
-## Monitoring Deployments
-
-### GitHub Actions Dashboard
-
-Monitor pipeline status:
-
-1. **Actions Tab** - View all workflow runs
-2. **Workflow Details** - Step-by-step execution
-3. **Logs** - Detailed output for debugging
-4. **Artifacts** - Download build outputs
-
-### Azure Deployment Center
-
-Track deployments in Azure:
-
-1. **Deployment History** - All deployments
-2. **Logs** - Container startup logs
-3. **Metrics** - CPU, memory usage
-4. **Diagnostics** - Error troubleshooting
-
-## Best Practices
-
-### 1. Branch Protection
-
-Configure branch protection rules:
-
-```json
-{
-  "required_status_checks": {
-    "strict": true,
-    "contexts": ["CI / lint", "CI / test", "CI / build"]
-  },
-  "enforce_admins": false,
-  "required_pull_request_reviews": {
-    "required_approving_review_count": 1
-  }
-}
-```
-
-### 2. Dependency Caching
-
-Optimize build times with caching:
-
-```yaml
-- name: Cache dependencies
-  uses: actions/cache@v3
-  with:
-    path: ~/.npm
-    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-    restore-keys: |
-      ${{ runner.os }}-node-
-```
-
-### 3. Security Scanning
-
-Add security checks to the pipeline:
-
-```yaml
-- name: Run security audit
-  run: npm audit --audit-level=moderate
-
-- name: Scan Docker image
-  uses: aquasecurity/trivy-action@master
-  with:
-    image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-```
+I keep the production environment protected with a review gate if GitHub plan/settings permit it. No additional cloud platform is required.
 
 ## Troubleshooting
 
-### Common Issues
-
-1. **Build Failures**
-   - Check Node.js version compatibility
-   - Verify all environment variables
-   - Review build logs for errors
-
-2. **Deployment Failures**
-   - Validate publish profile
-   - Check Azure service health
-   - Verify container registry access
-
-3. **Runtime Errors**
-   - Review App Service logs
-   - Check environment variables
-   - Validate database connectivity
-
-### Debug Commands
+| Symptom | First checks |
+| --- | --- |
+| CI fails before image build | `npm ci`, lint and Next.js build logs; confirm the build-phase flag is set |
+| GHCR push fails | `packages: write`, image name, owner and package permissions |
+| Azure cannot pull image | App Service registry credentials/permissions and the exact tag in site configuration |
+| Container restarts | App Service logs, runtime environment variables, port 3000 and MongoDB connectivity |
+| Health check fails | HTTP status, MongoDB ping, application logs; do not mark a 503 response healthy |
 
 ```bash
-# View GitHub Actions logs
 gh run view <run-id> --log
-
-# Check Azure App Service logs
-az webapp log tail \
-  --name kulturhub-app-prod \
-  --resource-group kulturhub-rg-prod
-
-# Test Docker image locally
-docker run -p 3000:3000 \
-  -e MONGODB_URI="..." \
-  ghcr.io/mvulcu/kulturhub:latest
+az webapp log tail --resource-group <resource-group> --name kulturhub-app-prod
 ```
 
----
+### Next incremental improvements
 
-<div class="text-center" markdown>
-
-[:material-arrow-left: Infrastructure](infrastructure.md){ .md-button }
-[:material-arrow-right: Security](security.md){ .md-button .md-button--primary }
-
-</div>
+1. Deploy by immutable SHA tag or digest rather than the moving branch tag.
+2. Add focused tests for server-side access control and the registration/login flow, then make them a CI gate. A placeholder `npm test` script would not be evidence of testing.
+3. Verify the final image runs as a non-root user and move off an end-of-life Node release with a tested build.
+4. Record a rollback exercise and a timestamped release checklist before claiming an RTO or deployment SLO.

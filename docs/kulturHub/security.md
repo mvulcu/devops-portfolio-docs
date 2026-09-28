@@ -1,14 +1,17 @@
 ---
 title: Security & Network
-description: Zero Trust security implementation for KulturHub
+description: Historical network design, server-side sessions and route authorization
 icon: material/shield-lock
 ---
+
+!!! info "Architecture and evidence"
+    This page preserves the original VNet/NSG design alongside the simpler App Service + Atlas layout. The session section describes the proposed code update; the other code blocks are examples unless linked to application source. I do not claim a GDPR certification or an independent security grade.
 
 # :material-shield-lock: Security & Network
 
 ## Overview
 
-KulturHub implements a comprehensive security strategy based on Zero Trust principles, defense in depth, and least privilege access. This document covers network isolation, authentication, data protection, and security best practices.
+I describe security controls I implemented in the application and the network design I explored on Azure. The architecture diagram below is a layered checklist: WAF, rate limiting and backup verification are optional or pending unless linked to a deployed configuration.
 
 ## Security Architecture
 
@@ -28,7 +31,7 @@ graph TB
     end
     
     subgraph "Authentication Layer"
-        H[JWT Tokens]
+        H[Session tokens]
         I[Role-Based Access]
         J[Session Management]
         K[Password Hashing]
@@ -136,67 +139,24 @@ Key security measures:<br>
 
 ## Authentication & Authorization
 
-### JWT Implementation
+### Server-side session and role checks
+
+I chose an opaque session cookie rather than introducing an identity service. Login compares the stored bcrypt hash, creates a random token and stores only its hash and expiration in MongoDB. On every protected request the server reads the cookie, looks up the current user and checks the role or ownership. Logout deletes the session. The browser's user state is only for presentation.
 
 ```mermaid
 sequenceDiagram
     participant User
-    participant Frontend
     participant API
-    participant JWT
-    participant Database
-    
-    User->>Frontend: Login (email, password)
-    Frontend->>API: POST /api/auth/login
-    API->>Database: Verify credentials
-    Database-->>API: User record
-    API->>API: Hash comparison
-    API->>JWT: Generate token
-    JWT-->>API: Signed JWT
-    API-->>Frontend: JWT + user data
-    Frontend->>Frontend: Store in httpOnly cookie
-    
-    Note over Frontend: Subsequent requests
-    Frontend->>API: Request with cookie
-    API->>JWT: Verify signature
-    JWT-->>API: Valid claims
-    API->>API: Check permissions
-    API-->>Frontend: Authorized response
+    participant DB as MongoDB
+    User->>API: POST /api/auth
+    API->>DB: Verify password; store token hash
+    API-->>User: HttpOnly cookie and public user fields
+    User->>API: POST /api/events with cookie
+    API->>DB: Resolve session and current role
+    API-->>User: 201, 401 or 403
 ```
 
-### Role-Based Access Control (RBAC)
-
-User roles and permissions:
-
-| Role | Permissions | Access Level |
-|------|------------|--------------|
-| **User** | View events, RSVP, update profile | Basic |
-| **Organizer** | Create/edit own events, view RSVPs | Extended |
-| **Admin** | All permissions, user management | Full |
-
-Implementation:
-
-```typescript
-// Middleware for route protection
-export async function requireAuth(
-  request: Request,
-  requiredRole?: string
-) {
-  const token = request.cookies.get('token');
-  
-  if (!token) {
-    throw new Error('Unauthorized');
-  }
-  
-  const payload = await verifyJWT(token);
-  
-  if (requiredRole && payload.role !== requiredRole) {
-    throw new Error('Insufficient permissions');
-  }
-  
-  return payload;
-}
-```
+In the reviewed update, `user` can RSVP, `organizer` can create and edit own events, and `admin` can manage users and approve organizer applications. Registration always assigns `user` server-side. Enforcement belongs in each API route, not merely in a dashboard or a pass-through middleware. See [`lib/session.ts`](https://github.com/mvulcu/kulturhub_6/blob/codex/kulturhub-core-hardening/lib/session.ts), [event routes](https://github.com/mvulcu/kulturhub_6/blob/codex/kulturhub-core-hardening/app/api/events/route.ts) and [admin route](https://github.com/mvulcu/kulturhub_6/blob/codex/kulturhub-core-hardening/app/api/applications/%5Bid%5D/route.ts).
 
 ### Password Security
 
@@ -205,11 +165,10 @@ Password handling best practices:
 1. **Hashing Algorithm:** bcrypt with 10 rounds
 2. **Minimum Requirements:**
    - 8 characters minimum
-   - Mix of letters and numbers
-   - No common passwords
+   - Strength checks and breached-password screening are potential follow-up work
 
 3. **Storage:** Only hashed passwords in database
-4. **Reset Flow:** Secure token-based reset
+4. **Reset Flow:** Not implemented in the reviewed code; document and build before claiming account recovery
 
 ## Data Security
 
@@ -278,7 +237,7 @@ const eventSchema = z.object({
 
 ### Security Headers
 
-Application security headers:
+Illustrative security headers to consider during browser testing. These are not proof that the application currently sets them:
 
 ```typescript
 // Security headers middleware
@@ -288,11 +247,11 @@ export const securityHeaders = {
   'X-XSS-Protection': '1; mode=block',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';"
+  'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';"
 };
 ```
 
-### CORS Configuration
+### CORS Configuration (illustrative)
 
 ```typescript
 // CORS settings
@@ -315,7 +274,6 @@ Local development uses `.env.local`:
 ```bash
 # .env.local (git ignored)
 MONGODB_URI=mongodb+srv://...
-JWT_SECRET=random-secure-string
 SENDGRID_API_KEY=SG...
 AZURE_STORAGE_CONNECTION_STRING=...
 ```
@@ -334,7 +292,6 @@ Regular rotation schedule:
 
 | Secret Type | Rotation Frequency | Method |
 |-------------|-------------------|---------|
-| JWT Secret | Every 90 days | Manual update |
 | API Keys | Every 180 days | Provider rotation |
 | Database Password | Every 365 days | Atlas rotation |
 
@@ -388,36 +345,15 @@ interface AuditLog {
 5. **Recovery** - Restore services
 6. **Lessons Learned** - Update procedures
 
-### Emergency Procedures
+### Emergency procedures
 
-Quick actions for common scenarios:
+If I suspect account compromise, I revoke that user's sessions in the MongoDB `sessions` collection and reset credentials through a controlled process. The reviewed code does not implement a `disabled` flag or a password-reset workflow, so toggling a database flag alone is not a valid containment action. For notification-key compromise I rotate the key in the function and App Service settings, then verify the notification path. I use Azure App Service access restrictions if a source IP must be blocked at the application entry point; an NSG attached to a separate VNet does not automatically filter public App Service requests.
 
-```bash
-# Disable compromised user
-db.users.updateOne(
-  { email: "compromised@email.com" },
-  { $set: { disabled: true } }
-)
+A production incident runbook needs a tested restore procedure, contacts and timestamps. These are next operational tasks, not completed exercises.
 
-# Rotate JWT secret
-az webapp config appsettings set \
-  --name kulturhub-app-prod \
-  --resource-group kulturhub-rg-prod \
-  --settings JWT_SECRET="new-secret"
+## Privacy and security checklist
 
-# Block IP in NSG
-az network nsg rule create \
-  --resource-group kulturhub-rg-prod \
-  --nsg-name kulturhub-nsg \
-  --name BlockSuspiciousIP \
-  --priority 150 \
-  --source-address-prefixes "malicious-ip" \
-  --access Deny
-```
-
-## Compliance & Best Practices
-
-### GDPR Compliance
+### Data privacy considerations
 
 - **Data Minimization** - Only collect necessary data
 - **User Consent** - Clear privacy policy

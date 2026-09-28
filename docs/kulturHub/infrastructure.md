@@ -4,11 +4,14 @@ description: Azure Bicep templates and deployment strategies for KulturHub
 icon: material/terraform
 ---
 
+!!! info "Source of truth"
+    The entry point is [`infra/bicep/main.bicep`](https://github.com/mvulcu/kulturhub_6/blob/codex/kulturhub-core-hardening/infra/bicep/main.bicep); modules reside under `infra/bicep/modules/{app,network,storage,compute}`. The B1 plan uses manual scaling. The dedicated image storage account permits public blob reads, while writes require the application connection string resolved inside the deployment. Do not output storage account keys in Bicep deployment results.
+
 # :material-terraform: Infrastructure as Code
 
 ## Overview
 
-KulturHub's infrastructure is fully defined as code using Azure Bicep, enabling reproducible deployments, version control, and automated provisioning. This approach ensures consistency across environments and simplifies disaster recovery.
+I used Azure Bicep to capture the App Service, B1 plan, storage and network modules. MongoDB Atlas is an external dependency and its resources are not created by these templates. The code excerpts below show the evolution of this design; use the linked source for exact paths and parameters.
 
 ## Bicep Module Architecture
 
@@ -266,7 +269,7 @@ az lock create \
 
 ## Infrastructure Evolution
 
-### Original Architecture (Full Azure)
+### Original Architecture (Full Azure; historical)
 
 The initial implementation included:
 
@@ -276,7 +279,7 @@ The initial implementation included:
 - **Multiple subnets** for service separation
 - **NSG rules** for traffic control
 
-### Optimized Architecture (Current)
+### Simplified Architecture (repository design)
 
 Post-optimization focuses on essentials:
 

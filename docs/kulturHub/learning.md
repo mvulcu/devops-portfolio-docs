@@ -4,6 +4,9 @@ description: Skills gained and lessons learned from the KulturHub project
 icon: material/school
 ---
 
+!!! info "My engineering retrospective"
+    I explain what I built and what I learned within Azure Student constraints. Proposed upgrades are presented as future work, not as services already deployed.
+
 # :material-school: Learning Outcomes
 
 ## Overview
