@@ -1,4 +1,4 @@
----
+﻿---
 title: Azure to GCP Migration Journey
 description: Complete documentation of the DevOps Portfolio migration from Microsoft Azure to Google Cloud Platform
 icon: material/cloud-sync
@@ -178,28 +178,34 @@ graph TB
 
 **New Components Added:**
 ```dockerfile
-# Multi-stage Dockerfile for optimization
+# Multi-stage Dockerfile for Next.js standalone optimization
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --only=production
-
-FROM node:20-alpine AS runtime
-WORKDIR /app
-COPY --from=builder /app/node_modules ./node_modules
+RUN npm install
 COPY . .
+RUN npm run build
+
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+USER nextjs
 EXPOSE 3000
-CMD ["npm", "start"]
+CMD ["node", "server.js"]
 ```
 
-#### 2. Contact Form Simplification
+#### 2. Secret Manager & External SMTP Integration
 
-**Removed Complexity:**
-- SMTP/SendGrid email integration
-- Azure Communication Email service
-- Complex form validation logic
+**Architecture Enhancement:**
+- Replaced Azure Communication Email with **Zoho SMTP (`smtp.zoho.eu`)** and **SendGrid**
+- **Zero Plaintext Secrets:** Passwords and API keys stored in **Google Secret Manager**
+- **Automatic Secret Resolution:** Mounted dynamically into Cloud Run containers via `value_source.secret_key_ref`
 
-**Result:** Clean, direct communication approach
+**Result:** Production-grade secret isolation with zero-cost email delivery
 
 #### 3. Environment Configuration Evolution
 
@@ -379,10 +385,10 @@ Total:                $0/month
 
 ### Challenge 1: Email Service Replacement
 !!! question "Issue"
-    Azure Communication Email service needed replacement
+    Azure Communication Email service needed replacement in a serverless GCP architecture
 
 !!! check "Solution"
-    Architectural simplification - removed contact form entirely, focused on direct communication methods
+    Integrated Zoho SMTP (`smtp.zoho.eu`) and SendGrid, storing sensitive credentials in **Google Secret Manager** and injecting them securely into Cloud Run at runtime
 
 ### Challenge 2: Storage URL Migration  
 !!! question "Issue"
@@ -393,10 +399,10 @@ Total:                $0/month
 
 ### Challenge 3: Container Optimization
 !!! question "Issue"
-    Initial Docker image size too large (1.2GB)
+    Initial monolithic Docker image size was too large (>1GB)
 
 !!! check "Solution"
-    Implemented multi-stage builds, optimized dependencies - reduced to 400MB
+    Implemented multi-stage builds on `node:20-alpine` with Next.js standalone output mode, reducing final runtime image to **~150MB**
 
 ### Challenge 4: Environment Variables
 !!! question "Issue"
