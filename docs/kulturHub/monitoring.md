@@ -348,27 +348,13 @@ export const checkAlerts = async () => {
 ### Application Health Endpoint
 
 ```typescript
-// app/api/health/route.ts
+// Excerpt of app/api/health/route.ts
 export async function GET() {
-  const health = {
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    memory: process.memoryUsage(),
-    environment: process.env.NODE_ENV,
-    version: process.env.npm_package_version
-  };
-  
-  // Check database connection
-  try {
-    await mongoose.connection.db.admin().ping();
-    health.database = 'connected';
-  } catch (error) {
-    health.status = 'unhealthy';
-    health.database = 'disconnected';
-  }
-  
-  return Response.json(health);
+  const dbStatus = await checkDatabaseConnection();
+  return NextResponse.json(
+    { status: dbStatus ? 'healthy' : 'unhealthy', timestamp: new Date().toISOString() },
+    { status: dbStatus ? 200 : 503 }
+  );
 }
 ```
 
