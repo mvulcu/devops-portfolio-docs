@@ -1,4 +1,4 @@
----
+﻿---
 title: KulturHub Overview
 description: Enterprise-grade event management platform with full DevOps lifecycle
 icon: material/calendar-star
@@ -13,13 +13,13 @@ A comprehensive DevOps project showcasing modern cloud architecture and automati
 
 <div class="grid cards" markdown>
 
--   :material-web:{ .lg .middle } __Live Production__
+-   :material-cloud-check:{ .lg .middle } __Architecture & IaC__
 
     ---
 
-    Experience the platform with full functionality for event discovery and management
+    Production-ready cloud architecture on Azure PaaS with Bicep IaC and automated CI/CD
 
-    [:octicons-arrow-right-24: Visit Live Site](https://kulturhub-app-prod.azurewebsites.net){ .md-button .md-button--primary }
+    [:octicons-arrow-right-24: Explore Architecture](architecture.md){ .md-button .md-button--primary }
 
 -   :material-file-document-multiple:{ .lg .middle } __Documentation__
 
@@ -191,14 +191,17 @@ timeline
     
     </div>
 
-## :material-presentation: Live Demo Features
+## :material-presentation: Platform Capabilities
 
-Visit the [live platform](https://kulturhub-app-prod.azurewebsites.net) to explore:
+Core system features implemented and validated in the application:
 
 - **Public Access:** Browse cultural events without registration
 - **User Registration:** Create account and RSVP to events
 - **Organizer Portal:** Apply for organizer status and create events
 - **Admin Panel:** Manage users and moderate content (restricted access)
+
+!!! note "Environment Status"
+    The KulturHub live demo was originally hosted on Microsoft Azure App Service. To eliminate ongoing cloud compute costs, the cloud instance is currently spun down. The complete architecture, Bicep IaC configurations, container definitions, and CI/CD pipelines are preserved and fully documented below.
 
 ## :material-navigation: Quick Navigation
 
