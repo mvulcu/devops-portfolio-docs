@@ -34,15 +34,15 @@ theme:
     - toc.follow
 
   palette:
-    # Light mode: clean slate + indigo
+    # Light mode: classic crisp indigo
     - scheme: default
-      primary: slate
+      primary: indigo
       accent: indigo
       toggle:
         icon: material/weather-sunny
         name: Switch to dark mode
 
-    # Dark mode: deep slate + cyan (Cloudflare / Stripe style)
+    # Dark mode: deep slate with cyan accent
     - scheme: slate
       primary: slate
       accent: cyan
@@ -113,12 +113,12 @@ extra_css:
 
 nav:
   - Overview: index.md
-  - "Portfolio (GCP Cloud Run)":
+  - "Portfolio (GCP)":
     - "System Overview": portfolio/index.md
     - "Azure Era (Legacy)": portfolio/deployment.md
     - "GCP Migration (Production)": portfolio/migration.md
     - "Observability Strategy": portfolio/monitoring.md
-  - "KulturHub (Azure PaaS)":
+  - "KulturHub (Azure)":
     - "System Overview": kulturHub/index.md
     - "Architecture & Bicep IaC": kulturHub/architecture.md
     - "Infrastructure & Networking": kulturHub/infrastructure.md
