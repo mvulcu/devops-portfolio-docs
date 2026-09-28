@@ -1,4 +1,4 @@
----
+﻿---
 title: Infrastructure as Code
 description: Azure Bicep templates and deployment strategies for KulturHub
 icon: material/terraform
@@ -75,6 +75,8 @@ The App Service module configures the containerized application:
 param appName string
 param planId string
 param location string
+@description('Docker image tag for immutable and reproducible deployments')
+param imageTag string = 'latest'
 
 resource appService 'Microsoft.Web/sites@2022-03-01' = {
   name: appName
@@ -82,7 +84,7 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
   properties: {
     serverFarmId: planId
     siteConfig: {
-      linuxFxVersion: 'DOCKER|ghcr.io/mvulcu/kulturhub:latest'
+      linuxFxVersion: 'DOCKER|ghcr.io/mvulcu/kulturhub:${imageTag}'
       alwaysOn: true
       http20Enabled: true
       minTlsVersion: '1.2'
@@ -178,7 +180,10 @@ resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2022-09-01'
     cors: {
       corsRules: [
         {
-          allowedOrigins: ['*']
+          allowedOrigins: [
+            'https://kulturhub-app-prod.azurewebsites.net'
+            'http://localhost:3000'
+          ]
           allowedMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
           allowedHeaders: ['*']
           exposedHeaders: ['*']
@@ -188,6 +193,8 @@ resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2022-09-01'
     }
   }
 }
+
+// Security: Public read allowed for event banners, but mutations require server-side SAS tokens
 ```
 
 ## Resource Deployment
@@ -319,6 +326,17 @@ All resources implement security best practices:<br>
 - Minimum TLS 1.2<br>
 - Managed identities where possible<br>
 - Network restrictions
+
+## :material-shield-key: Azure Student Subscription Constraints & Trade-offs
+
+Building within an **Azure for Students** subscription ($100 credit limit, restricted tenant roles) requires deliberate engineering trade-offs:
+
+| Constraint / Restriction | Impact on Architecture | Mitigating Architectural Decision |
+|--------------------------|------------------------|-----------------------------------|
+| **No Entra ID SPN Creation** | Cannot provision Service Principals for OIDC federation | Automated deployments authenticate via encrypted GitHub Secrets with Azure Publish Profiles with least-privilege repository access |
+| **No Key Vault RBAC / Policy** | Cannot bind Key Vault directly to App Service | Secrets stored encrypted at rest in App Service Configuration (AES-256) and GitHub Secrets |
+| **B1 SKU (No Deployment Slots)** | Cannot perform blue/green slot staging swaps | Atomic container updates using immutable Git SHA image tags with automated rollback capability |
+| **$100 Annual Credit Ceiling** | Enterprise services (Front Door, Cosmos DB) exhaust quota rapidly | Architecture optimized to B1 App Service + MongoDB Atlas M0 + Open Source Grafana VM (~$13/mo) |
 
 ## Troubleshooting
 

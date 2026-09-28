@@ -1,4 +1,4 @@
----
+﻿---
 title: Monitoring & Observability
 description: Comprehensive monitoring strategy for KulturHub
 icon: material/monitor-dashboard
@@ -125,13 +125,25 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 
 export const logger = {
   info: (message: string, data?: any) => {
-    if (isDevelopment) {
-      console.log(`[INFO] ${new Date().toISOString()} - ${message}`, data);
-    }
+    const payload = {
+      level: 'INFO',
+      timestamp: new Date().toISOString(),
+      message,
+      ...(data && { data })
+    };
+    // Structured JSON output captured by container stdout and Azure App Service Log Stream
+    console.log(JSON.stringify(payload));
   },
   
   error: (message: string, error?: any) => {
-    console.error(`[ERROR] ${new Date().toISOString()} - ${message}`, error);
+    const errorPayload = {
+      level: 'ERROR',
+      timestamp: new Date().toISOString(),
+      message,
+      error: error instanceof Error ? { message: error.message, stack: error.stack } : error
+    };
+    console.error(JSON.stringify(errorPayload));
+    
     // Send to monitoring in production
     if (!isDevelopment && globalThis.telegraf) {
       globalThis.telegraf.sendMetric('app.error', 1, { message });
@@ -195,7 +207,10 @@ export class MetricsService {
     try {
       await fetch(this.endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.TELEGRAF_SECRET_TOKEN}`
+        },
         body: JSON.stringify({
           metric: event,
           tags: properties,
@@ -216,6 +231,9 @@ export class MetricsService {
   }
 }
 ```
+
+!!! tip "Observability Best Practices: Authentication & Metric Batching"
+    The Telegraf endpoint is authenticated via Bearer tokens (TELEGRAF_SECRET_TOKEN) to prevent spoofing. Under heavy user load, single metrics are buffered in an in-memory queue and dispatched in batches every 5 seconds to reduce outbound network overhead.
 
 ### 3. Key Metrics Tracked
 
@@ -419,6 +437,16 @@ az webapp log download \
   --resource-group kulturhub-rg-prod \
   --log-file logs.zip
 ```
+
+## Database Reliability & Scale-Up Triggers
+
+To operate within **Azure for Students** budget constraints, database services rely on the MongoDB Atlas M0 cluster. The following capacity triggers are monitored to prevent resource exhaustion:
+
+| Metric | Free Tier Limit | Scale-Up Trigger | Action Plan |
+|--------|-----------------|------------------|-------------|
+| **Storage Capacity** | 512 MB | 400 MB (80%) | Auto-archive old event logs / migrate to dedicated M10 tier |
+| **Max Connections** | 100 concurrent | 70 concurrent | Tune Mongoose connection pool (maxPoolSize: 10 per instance) |
+| **Query Latency (P95)** | Shared CPU | > 300 ms | Audit indexes or initiate transition to dedicated cluster |
 
 ## Performance Monitoring
 

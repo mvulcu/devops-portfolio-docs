@@ -1,4 +1,4 @@
----
+﻿---
 title: System Architecture
 description: Complete architectural overview of KulturHub platform
 icon: material/layers-triple
@@ -34,7 +34,7 @@ graph TB
     subgraph "Data Layer"
         I[MongoDB Atlas<br/>Document Store]
         J[Azure Blob<br/>Image Storage]
-        K[Redis Cache<br/>Session Store]
+        K[Stateless JWT<br/>HttpOnly Cookies]
     end
     
     subgraph "Infrastructure Layer"
@@ -63,6 +63,9 @@ graph TB
     style I fill:#00a86b,stroke:#fff,stroke-width:2px,color:#fff
     style M fill:#0078d4,stroke:#fff,stroke-width:2px,color:#fff
 ```
+
+!!! info "Architectural Decision: Stateless Authentication over Redis"
+    To respect resource limits and reduce operational complexity under the **Azure for Students** tier, session state is managed completely statelessly via cryptographically signed JWTs stored in secure httpOnly cookies. This eliminated the need for a costly external Redis cluster while preserving horizontal scaling capabilities.
 
 ## Component Architecture
 
@@ -164,7 +167,10 @@ erDiagram
 
 ## Network Architecture
 
-### Original Azure-Native Design
+### Original Azure-Native Design (Enterprise Blueprint)
+
+!!! note "Evolution Note: Enterprise Blueprint vs Budget Realities"
+    The initial architectural blueprint envisioned Azure Front Door with Web Application Firewall (WAF) and Private Endpoints. Under the **Azure for Students** subscription constraints ( credit limit), Front Door (+/month) and Cosmos DB Private Endpoints (+/month) were streamlined. Security was transferred to application-level rate limiting, CORS whitelisting, MongoDB Atlas IP access lists, and Azure App Service platform TLS/DDoS protection.
 
 The initial implementation used comprehensive Azure networking:
 
@@ -332,7 +338,7 @@ graph LR
 The architecture supports horizontal scaling through:
 
 - **Stateless application design**
-- **External session storage**
+- **Stateless session tokens (JWT in httpOnly cookies)**
 - **Database connection pooling**
 - **CDN for static assets**
 - **Load balancer ready**

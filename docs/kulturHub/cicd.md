@@ -1,4 +1,4 @@
----
+﻿---
 title: CI/CD Pipeline
 description: Automated build and deployment processes for KulturHub
 icon: material/pipe
@@ -208,6 +208,11 @@ jobs:
           app-name: kulturhub-app-prod
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_PROD }}
           images: ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+      - name: Smoke Test & Health Check
+        run: |
+          echo "Verifying application availability and health endpoint..."
+          curl --fail --retry 5 --retry-delay 10 --retry-connrefused https://kulturhub-app-prod.azurewebsites.net/api/health || exit 1
 ```
 
 ## Docker Configuration
@@ -230,13 +235,11 @@ COPY package*.json ./
 RUN npm ci
 COPY . .
 
-# Build arguments for environment variables
+# Build arguments for public client-side variables only
 ARG NEXT_PUBLIC_API_URL
-ARG MONGODB_URI
-
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-ENV MONGODB_URI=$MONGODB_URI
 
+# Secrets like MONGODB_URI are strictly injected at runtime, NOT baked into Docker layers
 RUN npm run build
 
 # Production image
@@ -261,6 +264,9 @@ ENV PORT 3000
 CMD ["node", "server.js"]
 ```
 
+!!! security "Security Rule: Zero Credentials in Build Layers"
+    Sensitive credentials such as MONGODB_URI and secret keys are **never** passed as Docker ARG or baked into image layers. Only client-safe variables (NEXT_PUBLIC_*) are present at build time. All secrets are injected dynamically at container startup via Azure App Service Environment Variables.
+
 ### Image Optimization
 
 Key optimization strategies:
@@ -279,24 +285,22 @@ Key optimization strategies:
 graph LR
     subgraph "Branches"
         A[feature/*]
-        B[develop]
+        B[dev]
         C[main]
     end
     
     subgraph "Environments"
         D[Local Dev]
         E[Development]
-        F[Staging]
-        G[Production]
+        F[Production]
     end
     
     A --> D
     B --> E
-    B --> F
-    C --> G
+    C --> F
     
     style C fill:#0969da,stroke:#fff,stroke-width:2px,color:#fff
-    style G fill:#1f883d,stroke:#fff,stroke-width:2px,color:#fff
+    style F fill:#1f883d,stroke:#fff,stroke-width:2px,color:#fff
 ```
 
 ### Deployment Process
@@ -336,6 +340,9 @@ Required secrets for the pipeline:
 | `MONGODB_URI` | Database connection | Repository |
 | `SENDGRID_API_KEY` | Email service | Repository |
 | `AZURE_STORAGE_CONNECTION_STRING` | Blob storage | Repository |
+
+!!! info "Architectural Context: Authentication on Azure Student Subscription"
+    Due to Azure for Students directory restrictions preventing Entra ID Application Registrations (SPN creation for OIDC federation), automated CI/CD relies on encrypted XML Publish Profiles scoped per App Service. These profiles are securely stored in GitHub Secrets and guarded with GitHub Branch Protection rules.
 
 ### Setting Secrets
 

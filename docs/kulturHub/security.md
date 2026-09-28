@@ -1,4 +1,4 @@
----
+﻿---
 title: Security & Network
 description: Zero Trust security implementation for KulturHub
 icon: material/shield-lock
@@ -290,7 +290,10 @@ export const securityHeaders = {
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
   'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';"
 };
-```
+`
+
+!!! warning "CSP Hardening & Framework Trade-off"
+    Next.js client-side hydration historically requires inline scripts. For high-assurance enterprise hardening, unsafe-inline and unsafe-eval should be transitioned to dynamic Cryptographic Nonces ('nonce-{random}') generated per-request in Next.js middleware, completely eliminating XSS injection vectors.
 
 ### CORS Configuration
 
@@ -307,6 +310,12 @@ const corsOptions = {
 ```
 
 ## Secrets Management
+
+!!! info "Secrets Architecture under Azure Student Constraints"
+    While enterprise architectures leverage **Azure Key Vault** paired with Managed Identities, Azure for Students accounts restrict Entra ID directory role assignments and Key Vault RBAC policies. As a robust compensating control:
+    
+    1. **Build & Pipeline:** All deployment credentials and keys reside in **GitHub Actions Encrypted Secrets** (AES-256).
+    2. **Runtime Protection:** Secrets are passed securely into **Azure App Service Configuration**, where they remain encrypted at rest by Azure Storage/KMS and are injected strictly as in-memory environment variables for the running container.
 
 ### Development Environment
 
@@ -328,7 +337,10 @@ Production secrets stored in:
 2. **App Service Configuration** - Runtime variables
 3. **Connection Strings** - Secure database connections
 
-### Secret Rotation
+### Secret Rotation & Invalidation Strategy
+
+!!! tip "Token Revocation Strategy"
+    In addition to scheduled rotation, emergency invalidation is supported via token blacklisting (jti identification stored in database) and password hash invalidation upon credential changes.
 
 Regular rotation schedule:
 
