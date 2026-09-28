@@ -34,14 +34,11 @@ graph TB
     subgraph "Data Layer"
         I[MongoDB Atlas<br/>Document Store]
         J[Azure Blob<br/>Image Storage]
-        K[Redis Cache<br/>Session Store]
     end
     
     subgraph "Infrastructure Layer"
         L[Docker Containers]
         M[Azure App Service]
-        N[Virtual Network]
-        O[Security Groups]
     end
     
     A --> C
@@ -53,16 +50,15 @@ graph TB
     F --> I
     G --> I
     G --> J
-    F --> K
     
     L --> M
-    M --> N
-    N --> O
     
     style C fill:#667eea,stroke:#fff,stroke-width:2px,color:#fff
     style I fill:#00a86b,stroke:#fff,stroke-width:2px,color:#fff
     style M fill:#0078d4,stroke:#fff,stroke-width:2px,color:#fff
 ```
+
+The session collection is stored in MongoDB Atlas. The separate VNet/NSG design is documented in the historical network section below; the simplified public App Service diagram does not imply that App Service is isolated inside that VNet.
 
 ## Component Architecture
 
