@@ -7,8 +7,8 @@ icon: material/view-dashboard-outline
 # DevOps & Cloud Architecture Hub
 
 <div class="hero-lead" markdown>
-Central technical documentation portal maintained by **Maria Vulcu**, Senior DevOps & Cloud Platform Engineer. 
-This hub documents production architectures, Infrastructure-as-Code (IaC) modular frameworks, zero-downtime multi-cloud migrations, and enterprise-grade observability pipelines.
+Central technical documentation portal maintained by **Maria Vulcu**, DevOps / Cloud Engineer. 
+This hub documents production architectures, Infrastructure-as-Code (IaC) modular frameworks, zero-downtime multi-cloud migrations, and observability pipelines.
 </div>
 
 [:material-web: Live Hub (grepme.dev)](https://grepme.dev){ .md-button .md-button--primary }
@@ -78,18 +78,16 @@ This hub documents production architectures, Infrastructure-as-Code (IaC) modula
 ## Core Engineering Principles
 
 !!! info "Operational & Architectural Baseline"
-    Every system documented in this hub adheres to core Staff SRE principles:
+    Every system documented in this hub adheres to core engineering principles:
     
     1. **Strict Infrastructure as Code:** All infrastructure is versioned and applied via Terraform or Azure Bicep (zero click-ops).
     2. **Secret Isolation:** No plain-text secrets in source code or Docker layers; runtime injection via Secret Manager and environment variables.
     3. **Observability by Design:** Health check endpoints (`/api/health`), structured logging, and automated metric ingestion.
     4. **FinOps Discipline:** High-availability architectures optimized for cost efficiency and strict free-tier resource bounds.
 
-<div class="footer-container" markdown>
+---
+
+## Contact & Collaboration
 
 Have questions about these systems or looking to collaborate?  
 Reach out at **[ping@grepme.dev](mailto:ping@grepme.dev)** or connect on **[LinkedIn](https://www.linkedin.com/in/mariavulcu)**.
-
-<small>&copy; 2026 Maria Vulcu &bull; Senior DevOps &amp; Cloud Platform Engineer</small>
-
-</div>

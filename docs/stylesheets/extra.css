@@ -5,13 +5,7 @@
   text-align: center;
 }
 
-/* Subtle Hero container */
-.hero-container {
-  padding: 1.5rem 0 1rem 0;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid var(--md-default-fg-color--lightest);
-}
-
+/* Hero Lead text */
 .hero-lead {
   font-size: 1.1rem;
   line-height: 1.6;
@@ -54,12 +48,4 @@
 /* Code blocks */
 .md-typeset pre > code {
   font-family: "JetBrains Mono", SFMono-Regular, Consolas, Menlo, monospace;
-}
-
-/* Footer Section */
-.footer-container {
-  margin-top: 3.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--md-default-fg-color--lightest);
-  text-align: center;
 }
