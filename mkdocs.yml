@@ -1,5 +1,5 @@
-site_name: DevOps Engineering Hub | Maria Vulcu
-site_url: https://docs-grepme-dev.storage.googleapis.com/
+﻿site_name: DevOps Engineering Hub | Maria Vulcu
+site_url: https://mvulcu.github.io/devops-portfolio-docs/
 site_description: Technical documentation center for cloud-native projects, DevOps practices, and infrastructure automation
 site_author: Maria Vulcu
 repo_url: https://github.com/mvulcu
@@ -135,3 +135,4 @@ nav:
 # Авторские права
 copyright: |
   &copy; 2024 Maria Vulcu
+
