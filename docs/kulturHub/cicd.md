@@ -8,13 +8,13 @@ icon: material/pipe
 
 I built KulturHub as a containerized Next.js application. GitHub Actions builds and publishes an image to GHCR; Azure App Service runs that image. The original repository contained two production deployment workflows. In this update I keep a single workflow to avoid competing deployments from the same push.
 
-**Source:** [application workflow](https://github.com/mvulcu/kulturhub_6/blob/codex/kulturhub-core-hardening/.github/workflows/ci-cd.yml) · [Dockerfile](https://github.com/mvulcu/kulturhub_6/blob/codex/kulturhub-core-hardening/Dockerfile) · [Bicep entry point](https://github.com/mvulcu/kulturhub_6/blob/codex/kulturhub-core-hardening/infra/bicep/main.bicep).
+**Source:** [application workflow](https://github.com/mvulcu/kulturhub_6/blob/master/.github/workflows/ci-cd.yml) · [Dockerfile](https://github.com/mvulcu/kulturhub_6/blob/master/Dockerfile) · [Bicep entry point](https://github.com/mvulcu/kulturhub_6/blob/master/infra/bicep/main.bicep).
 
 ## Delivery path
 
 ```mermaid
 flowchart TB
-    PR["Pull request to master/develop"] --> CHECK["Lint and build"]
+    PR["Pull request to master/develop"] --> CHECK["Next.js build"]
     CHECK --> IMAGE["Docker build"]
     IMAGE --> GHCR["GHCR"]
     GHCR --> DEV["Azure development app"]
@@ -24,9 +24,9 @@ flowchart TB
 
 | Trigger | Build and publish | Deployment |
 | --- | --- | --- |
-| Pull request to `master` or `develop` | Lint, Next.js build and Docker build; no image push | None |
-| Push to `develop` | Same checks; publish `develop` and commit SHA tags | Development App Service |
-| Push to `master` | Same checks; publish `master` and commit SHA tags | Production App Service, then `/api/health` check |
+| Pull request to `master` or `develop` | Next.js build and Docker build; no image push | None |
+| Push to `develop` | Build; publish `develop` and commit SHA tags | Development App Service |
+| Push to `master` | Build; publish `master` and commit SHA tags | Production App Service, then `/api/health` check |
 
 This is the **proposed branch workflow**. An image can exist in a repository without proving it is the image currently serving traffic. I check the deployed Azure image setting and the Actions run before making a live-status claim.
 
@@ -70,9 +70,6 @@ jobs:
 
     - name: Install dependencies
       run: npm ci
-
-    - name: Run linting
-      run: npm run lint
 
     - name: Verify production build
       run: NEXT_PHASE=phase-production-build MONGODB_URI=mongodb://placeholder:1234 npm run build
@@ -207,7 +204,7 @@ CMD ["node", "server.js"]
 
 I use Bicep for the Azure App Service plan, site, storage and network resources. `develop` and `master` map to distinct app names in the workflow. Bicep provisions a B1 plan, where scaling is manual; I do not need a separate paid staging environment for this portfolio project.
 
-Runtime configuration belongs to the App Service settings. GitHub Actions uses publish profiles for deployment; the MongoDB URI and Azure Storage connection string should not be baked into the image or printed as Bicep outputs. The [App Service module](https://github.com/mvulcu/kulturhub_6/blob/codex/kulturhub-core-hardening/infra/bicep/modules/app/appService.bicep) resolves the storage key inside the deployment. Azure recommends keeping secrets out of deployment outputs.
+Runtime configuration belongs to the App Service settings. GitHub Actions uses publish profiles for deployment; the MongoDB URI and Azure Storage connection string should not be baked into the image or printed as Bicep outputs. The [App Service module](https://github.com/mvulcu/kulturhub_6/blob/master/infra/bicep/modules/app/appService.bicep) resolves the storage key inside the deployment. Azure recommends keeping secrets out of deployment outputs.
 
 ## Post-deployment check and rollback
 
@@ -242,7 +239,7 @@ I keep the production environment protected with a review gate if GitHub plan/se
 
 | Symptom | First checks |
 | --- | --- |
-| CI fails before image build | `npm ci`, lint and Next.js build logs; confirm the build-phase flag is set |
+| CI fails before image build | `npm ci` and Next.js build logs; confirm the build-phase flag is set |
 | GHCR push fails | `packages: write`, image name, owner and package permissions |
 | Azure cannot pull image | App Service registry credentials/permissions and the exact tag in site configuration |
 | Container restarts | App Service logs, runtime environment variables, port 3000 and MongoDB connectivity |
@@ -256,6 +253,6 @@ az webapp log tail --resource-group <resource-group> --name kulturhub-app-prod
 ### Next incremental improvements
 
 1. Deploy by immutable SHA tag or digest rather than the moving branch tag.
-2. Add focused tests for server-side access control and the registration/login flow, then make them a CI gate. A placeholder `npm test` script would not be evidence of testing.
+2. Configure non-interactive ESLint, then add focused tests for server-side access control and registration/login. The previous `next lint` command prompted for an initial configuration in CI; a placeholder test script would not be evidence of testing.
 3. Verify the final image runs as a non-root user and move off an end-of-life Node release with a tested build.
 4. Record a rollback exercise and a timestamped release checklist before claiming an RTO or deployment SLO.
