@@ -1,0 +1,6 @@
+{
+  "name": "DevOps / Platform / Cloud Engineer",
+  "description": "Production infrastructure, cloud migrations and technical case studies focused on Kubernetes, Infrastructure as Code, CI/CD, GitOps and observability.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
